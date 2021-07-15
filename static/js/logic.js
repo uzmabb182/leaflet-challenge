@@ -1,27 +1,58 @@
-// Store our API endpoint as queryUrl.
-var queryUrl = "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2021-01-01&endtime=2021-01-02&maxlongitude=-69.52148437&minlongitude=-123.83789062&maxlatitude=48.74894534&minlatitude=25.16517337";
+// Step_1: Creating the map object
+//================================
+var myMap = L.map("map", {
+  center: [40.7128, -74.0059],
+  zoom: 11
+});
 
-// Perform a GET request to the query URL/
-d3.json(queryUrl).then(function (data) {
-  // Once we get a response, send the data.features object to the createFeatures function.
+// Step_2: Adding the tile layer
+//================================
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(myMap);
+
+
+
+var link = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson"
+
+// Step_3: Getting our GeoJSON data
+//==================================
+// Use this link to get the GeoJSON data.
+
+d3.json(link).then(function(data) {
+
+// Once we get a response, send the data.features to console
   console.log(data)
   console.log(data.features)
 
-  
-// earthquakeData[0] is an object, saving into variable 
   let earthquakeData = data.features
-  console.log(earthquakeData[0])
-  let firstFeature = earthquakeData[0]
 
-// firstFeature has geometry and properties that we need
+// Defining arrays that will store the coordinate, and magnitude data for markers
 
-  console.log(firstFeature.properties)
-  let propertiesData = firstFeature.properties
-  console.log(propertiesData.mag)
+var magnitudeMarkers = [];
+var coordinatesMarkers = [];
+
+// Looping to create an array of coordinate makers
+for (var i = 0; i < earthquakeData.length; i++) {
+  let propertiesData = earthquakeData[i].properties
+  magnitudeMarkers.push(propertiesData.mag
+  );
+}
+
+console.log(magnitudeMarkers)
+
+// Looping to create an array of magnitude makers
+for (var i = 0; i < earthquakeData.length; i++) {
+  let geometryData = earthquakeData[i].geometry
+  coordinatesMarkers.push(geometryData.coordinates
+  );
+}
+
+console.log(coordinatesMarkers)
 
 
-  console.log(firstFeature.geometry)
-  let geometryData = firstFeature.geometry
-  console.log(geometryData.coordinates)
+
+  // Creating a GeoJSON layer with the retrieved data
+  L.geoJson(data).addTo(myMap);
 });
 
