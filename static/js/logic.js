@@ -14,27 +14,40 @@
 // Create a legend that will provide context for your map data.
 
 //=====================================================================================================================
+//===================================================================================================================
+// Level 2: The USGS wants you to plot a second data set on your map to illustrate the relationship 
+//between tectonic plates and seismic activity. You will need to pull in a second data set and visualize it 
+//alongside your original set of data. Data on tectonic plates can be found at https://github.com/fraxen/tectonicplates.
+//=====================================================================================================================
+
+// In this step, you will:
+
+// Plot a second data set on our map.
+
+// Add a number of base maps to choose from as well as separate out our two different data sets into overlays that can be turned on and off independently.
+
+// Add layer controls to our map.
+//=====================================================================================================================
+
+// Use this link to get the GeoJSON earthquakes data.
+var link1 = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson"
+
+// Use this link to get the GeoJSON tectonic plates data.
+var link2 = "https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_plates.json"
 
 
-// Use this link to get the GeoJSON data.
-var link = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson"
-
-// Define arrays to hold the created city and state markers.
-var cityMarkers = [];
-
-d3.json(link).then(function (data) {
+d3.json(link1).then(function (data) {
   console.log(data)
   console.log(data.features)
 
   // Define a function that we want to run once for each feature in the features array.
   // Give each feature a popup that describes the magnitude and place of the earthquake.
 
-
   function onEachFeature(feature, layer) {
-    console.log(feature)
+    // console.log(feature)
     //console.log(feature.properties.mag)
-    console.log(feature.geometry.coordinates[2])
-    layer.bindPopup(`<h3>Magnitude: ${feature.properties.mag}</h3><hr><p>Place: ${(feature.properties.place)}</p>`);
+    // console.log(feature.geometry.coordinates[2])
+    layer.bindPopup(`<h3>Magnitude: ${feature.properties.mag}</h3><hr><h3>Depth: ${feature.geometry.coordinates[2]}</h3><hr><p>Location: ${(feature.properties.place)}</p>`);
   }
 
   // A function to generate color based on depth
@@ -79,10 +92,9 @@ function markerSize(magnitude) {
     onEachFeature: onEachFeature, 
     pointToLayer: function(feature, latlong){
       return L.circleMarker(latlong)
-    }
-    
+    }  
   });
-
+  
   // Create the base layers.
   var street = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -103,7 +115,6 @@ function markerSize(magnitude) {
 
   // Create an overlay object.
   var overlayMaps = {
-
     "Earthquake Magnitude": earthquakes
   };
 
@@ -120,20 +131,11 @@ function markerSize(magnitude) {
     collapsed: false
   }).addTo(myMap);
 
+})//d3-link1
+
+//---------------------------------------------------------------------------------------------------------------------------------
+d3.json(link2).then(function (data) {
+  console.log(data)
+  console.log(data.features)
 })
 
-
-//===================================================================================================================
-// Level 2: The USGS wants you to plot a second data set on your map to illustrate the relationship 
-//between tectonic plates and seismic activity. You will need to pull in a second data set and visualize it 
-//alongside your original set of data. Data on tectonic plates can be found at https://github.com/fraxen/tectonicplates.
-//=====================================================================================================================
-
-// In this step, you will:
-
-// Plot a second data set on our map.
-
-// Add a number of base maps to choose from as well as separate out our two different data sets into overlays that can be turned on and off independently.
-
-// Add layer controls to our map.
-//===================================================================================================
