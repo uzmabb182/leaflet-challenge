@@ -5,7 +5,8 @@
 
 // Create a map using Leaflet that plots all of the earthquakes from your data set based on their longitude and latitude.
 
-// Your data markers should reflect the magnitude of the earthquake by their size and and depth of the earthquake by color. Earthquakes with higher magnitudes should appear larger and earthquakes with greater depth should appear darker in color.
+// Your data markers should reflect the magnitude of the earthquake by their size and and depth of the earthquake by color. 
+// Earthquakes with higher magnitudes should appear larger and earthquakes with greater depth should appear darker in color.
 
 // HINT: The depth of the earth can be found as the third coordinate for each earthquake.
 
@@ -24,7 +25,8 @@
 
 // Plot a second data set on our map.
 
-// Add a number of base maps to choose from as well as separate out our two different data sets into overlays that can be turned on and off independently.
+// Add a number of base maps to choose from as well as separate out our two different data sets into overlays that 
+// can be turned on and off independently.
 
 // Add layer controls to our map.
 //=====================================================================================================================
@@ -40,6 +42,7 @@ d3.json(link1).then(function (data) {
   console.log(data)
   console.log(data.features)
 
+
   // Define a function that we want to run once for each feature in the features array.
   // Give each feature a popup that describes the magnitude and place of the earthquake.
 
@@ -52,16 +55,16 @@ d3.json(link1).then(function (data) {
 
   // A function to generate color based on depth
   function generateColor(depth) {
-    if (depth > 10) {
+    if (depth > 0.8) {
       return "#ea2c2c"
     }
-    if (depth > .75) {
+    if (depth > 0.6) {
       return "#ea822c"
     }
-    if (depth > .50) {
-      return "#fbff00"    
+    if (depth > 0.4) {
+      return "#fbff00"
     }
-    if (depth > .25) {
+    if (depth > 0.2) {
       return "#72fa41"
     }
     else {
@@ -71,12 +74,12 @@ d3.json(link1).then(function (data) {
 
 
   // A function to determine the marker size based on the magnitude
-function markerSize(magnitude) {
-  return Math.sqrt(magnitude) * 10;
-}
+  function markerSize(magnitude) {
+    return Math.sqrt(magnitude) * 10;
+  }
 
- // Assigning the style by calling function based on requirement
-  function generateStyle(feature) { 
+  // Assigning the style by calling function based on requirement
+  function generateStyle(feature) {
     return {
       radius: markerSize(feature.properties.mag),
       color: generateColor(feature.geometry.coordinates[2]),
@@ -85,57 +88,103 @@ function markerSize(magnitude) {
     }
   }
 
+  // Create a separate layer group for magnitude
   // Create a GeoJSON layer that contains the features array on the geojsonFeature object.
   // Run the onEachFeature function once for each piece of data in the array.
   var earthquakes = L.geoJSON(data.features, {
     style: generateStyle,
-    onEachFeature: onEachFeature, 
-    pointToLayer: function(feature, latlong){
+    onEachFeature: onEachFeature,
+    pointToLayer: function (feature, latlong) {
       return L.circleMarker(latlong)
-    }  
-  });
-  
-  // Create the base layers.
-  var street = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-  })
-
-  var topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-    attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+    }
   });
 
-  // Create a separate layer group for magnitude
+  // Reading the second dataset
+  d3.json(link2).then(function (response) {
+    console.log(response)
+    console.log(response.features)
+    // Create a separate layer group for tectonic plates
+    var tectonicPlates = L.geoJSON(response.features, {
+      color: " #002366",
+      weight: 3
+    });
 
+    // Create the base layers.
+    var street = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    })
 
-  // Create a baseMaps object.
-  var baseMaps = {
-    "Street Map": street,
-    "Topographic Map": topo
-  };
+    var topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+      attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+    });
 
-  // Create an overlay object.
-  var overlayMaps = {
-    "Earthquake Magnitude": earthquakes
-  };
+    // Create a baseMaps object.
+    var baseMaps = {
+      "Street Map": street,
+      "Topographic Map": topo
+    };
 
-  // Define a map object.
-  var myMap = L.map("map", {
-    center: [37.09, -95.71],
-    zoom: 5,
-    layers: [street, earthquakes]
-  });
+    // Create an overlay object.
+    var overlayMaps = {
+      "Earthquake Magnitude": earthquakes,
+      "Tectonic Plates Line": tectonicPlates
+    };
 
-  // Pass our map layers to our layer control.
-  // Add the layer control to the map.
-  L.control.layers(baseMaps, overlayMaps, {
-    collapsed: false
-  }).addTo(myMap);
+    // Define a map object.
+    var myMap = L.map("map", {
+      center: [37.09, -95.71],
+      zoom: 5,
+      layers: [street, earthquakes]
+    });
 
+    // Pass our map layers to our layer control.
+    // Add the layer control to the map.
+    L.control.layers(baseMaps, overlayMaps, {
+      collapsed: false
+    }).addTo(myMap);
+
+    // Here we create a leaflet control object (AKA legend)
+    var legend = L.control({
+      position: "bottomright"
+    });
+
+    // Then add all the details for the legend
+    legend.onAdd = function () {
+      var div = L.DomUtil.create("div", "legend-control");
+
+      var magnitudes = [0, .2, .4, .6, .8];
+      var colors = [
+        "#800080",
+        "#72fa41",
+        "#fbff00",
+        "#ea822c",
+        "#ea2c2c"
+      ];
+
+      // Looping through our intervals to generate a label with a colored square for each interval.
+      for (var i = 0; i < magnitudes.length; i++) {
+        div.innerHTML += "<i style='background: " + colors[i] + "'></i> " + magnitudes[i] + (magnitudes[i + 1] ? "&ndash;" + magnitudes[i + 1] + "<br>" : "+");
+      }
+      return div;
+    };
+    legend.addTo(myMap)
+  })//d3-link2
 })//d3-link1
 
 //---------------------------------------------------------------------------------------------------------------------------------
-d3.json(link2).then(function (data) {
-  console.log(data)
-  console.log(data.features)
-})
 
+// if (depth > 0.8 {
+//   return "#ea2c2c"
+// }
+// if (depth > 0.6) {
+//   return "#ea822c"
+// }
+// if (depth > 0.4) {
+//   return "#fbff00"
+// }
+// if (depth > 0.2) {
+//   return "#72fa41"
+// }
+// else {
+//   return "#800080"
+// }
